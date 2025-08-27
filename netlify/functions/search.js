@@ -33,21 +33,25 @@ exports.handler = async (event) => {
             attributeNamePrefix: "@_",
             textNodeName: "#text",
             isArray: (name, jpath) => {
-                const isArrayNames = ['sru:record', 'facet:facet', 'facet:term', 'sru:recordData'];
-                return isArrayNames.includes(name);
+                return name === 'sru:record' || name === 'facet:facet' || name === 'facet:term';
             }
         });
         const jsonObj = parser.parse(xmlText);
 
-        const records = jsonObj['sru:searchRetrieveResponse']['sru:records']['sru:record'];
-        const totalRecords = jsonObj['sru:searchRetrieveResponse']['sru:numberOfRecords'];
-        const facets = jsonObj['sru:searchRetrieveResponse']['sru:extraResponseData']['sru:facetedResults']?.['facet:facet'] || [];
+        const searchResponse = jsonObj['sru:searchRetrieveResponse'] || {};
+        const totalRecords = parseInt(searchResponse['sru:numberOfRecords'], 10) || 0;
+        
+        const recordsData = searchResponse['sru:records']?.['sru:record'];
+        const records = Array.isArray(recordsData) ? recordsData : (recordsData ? [recordsData] : []);
+        
+        const facetsData = searchResponse['sru:extraResponseData']?.['sru:facetedResults']?.['facet:facet'];
+        const facets = Array.isArray(facetsData) ? facetsData : (facetsData ? [facetsData] : []);
 
-        const simplifiedRecords = records ? records.map(record => {
-            const originalData = record['sru:recordData']['gzd:gad']['gzd:originalData'];
-            const enrichedData = record['sru:recordData']['gzd:gad']['gzd:enrichedData'];
+        const simplifiedRecords = records.map(record => {
+            const originalData = record['sru:recordData']?.['gzd:gad']?.['gzd:originalData'];
+            const enrichedData = record['sru:recordData']?.['gzd:gad']?.['gzd:enrichedData'];
 
-            const metadata = originalData['overheidwetgeving:meta'] || {};
+            const metadata = originalData?.['overheidwetgeving:meta'] || {};
             const core = metadata['overheidwetgeving:owmskern'] || {};
             const mantel = metadata['overheidwetgeving:owmsmantel'] || {};
             const enriched = enrichedData || {};
@@ -56,7 +60,7 @@ exports.handler = async (event) => {
                 const parts = path.split('.');
                 let current = obj;
                 for (let part of parts) {
-                    current = current ? current[part] : undefined;
+                    current = current?.[part];
                 }
                 return current;
             };
@@ -76,23 +80,27 @@ exports.handler = async (event) => {
                 type,
                 preferredUrl
             };
-        }) : [];
+        });
 
         const simplifiedFacets = facets.map(facet => {
-            const index = facet['facet:index']['#text'];
-            const terms = facet['facet:terms']['facet:term'].map(term => ({
-                actualTerm: term['facet:actualTerm']['#text'],
-                query: term['facet:query']['#text'],
-                count: parseInt(term['facet:count']['#text'], 10)
+            const index = facet['facet:index']?.['#text'];
+            const termsData = facet['facet:terms']?.['facet:term'];
+            const terms = Array.isArray(termsData) ? termsData : (termsData ? [termsData] : []);
+            
+            const simplifiedTerms = terms.map(term => ({
+                actualTerm: term['facet:actualTerm']?.['#text'],
+                query: term['facet:query']?.['#text'],
+                count: parseInt(term['facet:count']?.['#text'], 10)
             }));
-            return { index, terms };
+            
+            return { index, terms: simplifiedTerms };
         });
 
         return {
             statusCode: 200,
             body: JSON.stringify({
                 records: simplifiedRecords,
-                totalRecords: parseInt(totalRecords, 10),
+                totalRecords: totalRecords,
                 facets: simplifiedFacets
             }),
         };
