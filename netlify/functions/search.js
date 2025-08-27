@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 const { XMLParser } = require('fast-xml-parser');
 
 exports.handler = async (event) => {
