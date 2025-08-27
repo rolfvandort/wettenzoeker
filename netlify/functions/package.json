@@ -1,0 +1,17 @@
+{
+  "name": "overheid-nl-search",
+  "version": "1.0.0",
+  "description": "A web application to search for laws and official publications using the Overheid.nl API",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Build successful'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "fast-xml-parser": "^4.2.5"
+  }
+}
