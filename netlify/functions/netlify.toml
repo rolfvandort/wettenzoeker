@@ -1,4 +1,5 @@
 [build]
+package = "@netlify/plugin-functions-install-core"
 command = "echo 'Netlify build successful'"
 publish = "."
 
