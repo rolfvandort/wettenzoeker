@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wetten & Publicaties Zoeken</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="page-header">
+        <h1>Roelies MEGA-filter</h1>
+        <p>Wetten & Publicaties Zoeken</p>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Zoek op trefwoord, titel of publicatienaam...">
+            <button id="search-button">Zoeken</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <aside class="sidebar" id="filter-sidebar">
+            <h2>Filters</h2>
+            <div id="filter-container">
+                <div class="filter-section">
+                    <h3>Datum</h3>
+                    <div class="date-filter">
+                        <label for="start-date">Van:</label>
+                        <input type="date" id="start-date">
+                        <label for="end-date">Tot:</label>
+                        <input type="date" id="end-date">
+                        <button id="apply-date-filter">Toepassen</button>
+                    </div>
+                </div>
+            </div>
+            <p id="no-filters" class="hidden">Er zijn geen filters beschikbaar voor deze zoekopdracht.</p>
+        </aside>
+
+        <section class="results-container">
+            <div id="loader" class="hidden">Laden...</div>
+            <div id="results-count" class="hidden"></div>
+            <div id="results-list"></div>
+            <div id="pagination-container">
+                <button id="prev-page" class="hidden">Vorige</button>
+                <button id="next-page" class="hidden">Volgende</button>
+            </div>
+            <p id="no-results" class="hidden">Geen resultaten gevonden.</p>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
