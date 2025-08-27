@@ -1,0 +1,233 @@
+:root {
+    --primary-color: #005A9C;
+    --secondary-color: #007ACC;
+    --accent-color: #E6E6E6;
+    --text-color: #333;
+    --light-text-color: #777;
+    --bg-color: #F4F7F9;
+    --card-bg: #fff;
+    --border-color: #ddd;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.page-header {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 3rem 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    border: none;
+    font-size: 1rem;
+    outline: none;
+}
+
+#search-button {
+    padding: 0.75rem 2rem;
+    background-color: var(--secondary-color);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#search-button:hover {
+    background-color: #005a9c;
+}
+
+.main-content {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem 5%;
+}
+
+.sidebar {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-width: 250px;
+    max-width: 300px;
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+}
+
+.sidebar h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.filter-section {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.filter-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+}
+
+.filter-options {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.filter-options.expanded {
+    max-height: 500px;
+}
+
+.filter-options label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-options input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.results-container {
+    flex-grow: 1;
+}
+
+#loader {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: var(--light-text-color);
+}
+
+#results-count {
+    font-size: 1rem;
+    color: var(--light-text-color);
+    margin-bottom: 1rem;
+}
+
+.result-card {
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+}
+
+.result-card h3 {
+    font-size: 1.4rem;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.result-card a {
+    text-decoration: none;
+    color: var(--secondary-color);
+}
+
+.result-meta {
+    font-size: 0.9rem;
+    color: var(--light-text-color);
+    margin-bottom: 1rem;
+}
+
+.result-meta span {
+    margin-right: 1rem;
+}
+
+#pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+#pagination-container button {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#pagination-container button:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.hidden {
+    display: none;
+}
+
+.date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.date-filter input[type="date"] {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.date-filter button {
+    padding: 0.5rem;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
