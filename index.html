@@ -3,52 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wetten & Publicaties Zoeken</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Overheid.nl Zoeken - Professionele Zoekdienst voor Nederlandse Overheidsdocumenten</title>
+    <meta name="description" content="Doorzoek alle Nederlandse overheidsdocumenten, wetten, besluiten, bekendmakingen en officiële publicaties. Professionele zoektool voor de Overheid.nl database.">
+    <meta name="keywords" content="overheid, wet, zoeken, documenten, staatsblad, staatscourant, kamerstukken, besluiten">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏛️</text></svg>" type="image/svg+xml">
 </head>
 <body>
+    <!-- Page Header -->
     <header class="page-header">
-        <h1>Wetten & Publicaties Zoeken</h1>
-        <p>Aangedreven door de Overheid.nl API</p>
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Zoek op trefwoord, titel of publicatienaam...">
-            <button id="search-button">Zoeken</button>
+        <div class="header-content">
+            <h1>🏛️ Overheid.nl Zoeken</h1>
+            <p>Doorzoek alle officiële Nederlandse overheidspublicaties</p>
+            
+            <!-- Main Search -->
+            <div class="search-container">
+                <input type="text" 
+                       id="search-input" 
+                       placeholder="Zoek naar wetten, besluiten, bekendmakingen..." 
+                       autocomplete="off"
+                       spellcheck="false">
+                <button id="search-button" type="button">
+                    🔍 Zoeken
+                </button>
+            </div>
         </div>
     </header>
 
-    <main class="main-content">
-        <aside class="sidebar" id="filter-sidebar">
-            <h2>Filters</h2>
-            <div id="filter-container">
-                <div class="filter-section">
-                    <h3 class="collapsible-header">Datum</h3>
-                    <div class="date-filter filter-options expanded">
-                        <label for="start-date">Van:</label>
+    <!-- Advanced Search Options -->
+    <section class="advanced-search">
+        <button id="advanced-toggle" type="button">
+            🔼 Geavanceerd zoeken
+        </button>
+        
+        <div id="advanced-options" class="hidden">
+            <div class="advanced-grid">
+                <div class="form-group">
+                    <label for="collection-select">Collectie</label>
+                    <select id="collection-select">
+                        <option value="all">Alle collecties</option>
+                        <option value="officielepublicaties">Officiële Publicaties</option>
+                        <option value="sgd">Staten-Generaal Digitaal</option>
+                        <option value="tuchtrecht">Tuchtrecht</option>
+                        <option value="samenwerkendecatalogi">Samenwerkende Catalogi</option>
+                        <option value="verdragenbank">Verdragenbank</option>
+                        <option value="plooi">PLOOI</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="document-type-select">Document Type</label>
+                    <select id="document-type-select">
+                        <option value="all">Alle types</option>
+                        <option value="Wet">Wetten</option>
+                        <option value="Besluit">Besluiten</option>
+                        <option value="Regeling">Regelingen</option>
+                        <option value="Kamerstuk">Kamerstukken</option>
+                        <option value="Handelingen">Handelingen</option>
+                        <option value="Bijlage">Bijlagen</option>
+                        <option value="Brief">Brieven</option>
+                        <option value="Circulaire">Circulaires</option>
+                        <option value="Bekendmaking">Bekendmakingen</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="organization-select">Organisatie</label>
+                    <select id="organization-select">
+                        <option value="all">Alle organisaties</option>
+                        <option value="Tweede Kamer der Staten-Generaal">Tweede Kamer</option>
+                        <option value="Eerste Kamer der Staten-Generaal">Eerste Kamer</option>
+                        <option value="Ministerie van Justitie en Veiligheid">Min. JenV</option>
+                        <option value="Ministerie van Binnenlandse Zaken en Koninkrijksrelaties">Min. BZK</option>
+                        <option value="Ministerie van Financiën">Min. Financiën</option>
+                        <option value="Ministerie van Infrastructuur en Waterstaat">Min. I&W</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sort-select">Sorteren op</label>
+                    <select id="sort-select">
+                        <option value="relevance">Relevantie</option>
+                        <option value="date">Datum (nieuw → oud)</option>
+                        <option value="title">Titel (A → Z)</option>
+                        <option value="modified">Laatst gewijzigd</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Datumbereik</label>
+                <div class="date-range">
+                    <div>
+                        <label for="start-date">Vanaf datum</label>
                         <input type="date" id="start-date">
-                        <label for="end-date">Tot:</label>
+                    </div>
+                    <div>
+                        <label for="end-date">Tot datum</label>
                         <input type="date" id="end-date">
-                        <button id="apply-date-filter">Toepassen</button>
                     </div>
                 </div>
             </div>
-            <p id="no-filters" class="hidden">Geen filters beschikbaar voor deze zoekopdracht.</p>
+            
+            <div class="advanced-actions">
+                <button id="clear-filters" type="button">
+                    🗑️ Filters wissen
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Searches (shown when no results) -->
+    <section id="popular-searches" class="popular-searches">
+        <h3>Populaire zoekopdrachten:</h3>
+        <div class="popular-searches-container">
+            <button class="popular-search-btn" onclick="searchFor('grondwet')">grondwet</button>
+            <button class="popular-search-btn" onclick="searchFor('belastingwet')">belastingwet</button>
+            <button class="popular-search-btn" onclick="searchFor('verkeersbesluit')">verkeersbesluit</button>
+            <button class="popular-search-btn" onclick="searchFor('gemeentewet')">gemeentewet</button>
+            <button class="popular-search-btn" onclick="searchFor('burgerlijk wetboek')">burgerlijk wetboek</button>
+            <button class="popular-search-btn" onclick="searchFor('strafrecht')">strafrecht</button>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Sidebar with Filters -->
+        <aside id="filter-sidebar" class="sidebar hidden">
+            <h2>🔧 Filters</h2>
+            <div id="facet-container">
+                <!-- Dynamic facets will be inserted here -->
+            </div>
         </aside>
 
+        <!-- Results Container -->
         <section class="results-container">
-            <div id="loader" class="hidden">Laden...</div>
-            <div id="results-count" class="hidden"></div>
-            <div id="results-list"></div>
-            <div id="pagination-container">
-                <button id="prev-page" class="hidden">Vorige</button>
-                <button id="next-page" class="hidden">Volgende</button>
+            <!-- Search Summary -->
+            <div id="search-summary" class="hidden">
+                <!-- Search summary will be inserted here -->
             </div>
-            <p id="no-results" class="hidden">Geen resultaten gevonden.</p>
+            
+            <!-- Results Count -->
+            <div id="results-count" class="hidden"></div>
+            
+            <!-- Loading Indicator -->
+            <div id="loader" class="hidden">
+                <div class="loader-spinner"></div>
+                <p>Zoeken in overheidsdata...</p>
+            </div>
+            
+            <!-- Results List -->
+            <div id="results-list">
+                <!-- Search results will be inserted here -->
+            </div>
+            
+            <!-- No Results Message -->
+            <div id="no-results" class="hidden">
+                <div class="no-results-message">
+                    <h3>🔍 Geen resultaten gevonden</h3>
+                    <p>Probeer het met andere zoektermen of pas uw filters aan.</p>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div id="pagination-container" class="hidden">
+                <!-- Pagination will be inserted here -->
+            </div>
         </section>
     </main>
 
-    <script src="app.js"></script>
+    <!-- Footer -->
+    <footer class="page-footer" style="background: var(--primary-color); color: white; text-align: center; padding: 2rem; margin-top: 3rem;">
+        <div class="footer-content">
+            <p>&copy; 2025 Overheid.nl Zoeken - Toegang tot Nederlandse overheidsinformatie</p>
+            <p style="margin-top: 0.5rem; opacity: 0.8;">
+                Data afkomstig van 
+                <a href="https://www.overheid.nl" target="_blank" style="color: white; text-decoration: underline;">
+                    Overheid.nl
+                </a> 
+                via SRU 2.0 API
+            </p>
+            <div style="margin-top: 1rem;">
+                <a href="https://standaarden.overheid.nl/sru" target="_blank" 
+                   style="color: white; margin: 0 1rem; text-decoration: none; opacity: 0.8;">
+                    📖 API Documentatie
+                </a>
+                <a href="https://www.koopoverheid.nl/contact" target="_blank" 
+                   style="color: white; margin: 0 1rem; text-decoration: none; opacity: 0.8;">
+                   📧 Contact
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="app-2.js"></script>
 </body>
 </html>
