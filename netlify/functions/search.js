@@ -2,7 +2,18 @@ const fetch = require('node-fetch');
 const { XMLParser } = require('fast-xml-parser');
 
 exports.handler = async (event) => {
-    const { query, startRecord, maximumRecords, facetLimit } = event.queryStringParameters;
+    const { 
+        query, 
+        startRecord, 
+        maximumRecords, 
+        facetLimit,
+        collection,
+        documentType,
+        organization,
+        sortBy,
+        startDate,
+        endDate
+    } = event.queryStringParameters;
 
     if (!query) {
         return {
@@ -11,16 +22,47 @@ exports.handler = async (event) => {
         };
     }
 
+    // Build advanced query
+    let advancedQuery = query;
+    
+    // Add collection filter
+    if (collection && collection !== 'all') {
+        advancedQuery = `c.product-area=="${collection}" AND (${advancedQuery})`;
+    }
+    
+    // Add document type filter
+    if (documentType && documentType !== 'all') {
+        advancedQuery = `${advancedQuery} AND dt.type=="${documentType}"`;
+    }
+    
+    // Add organization filter
+    if (organization && organization !== 'all') {
+        advancedQuery = `${advancedQuery} AND dt.creator=="${organization}"`;
+    }
+    
+    // Add date range filter
+    if (startDate) {
+        advancedQuery = `${advancedQuery} AND dt.date>="${startDate}"`;
+    }
+    if (endDate) {
+        advancedQuery = `${advancedQuery} AND dt.date<="${endDate}"`;
+    }
+
     const sruBaseUrl = 'https://repository.overheid.nl/sru';
     const sruParams = new URLSearchParams({
         operation: 'searchRetrieve',
         version: '2.0',
-        query: query,
+        query: advancedQuery,
         startRecord: startRecord || '1',
         maximumRecords: maximumRecords || '20',
         recordSchema: 'gzd',
-        facetLimit: facetLimit || '100:dt.type,100:w.organisatietype',
+        facetLimit: facetLimit || '100:dt.type,100:w.organisatietype,100:c.product-area',
     });
+    
+    // Add sorting
+    if (sortBy && sortBy !== 'relevance') {
+        sruParams.append('sortKeys', getSortKey(sortBy));
+    }
 
     const sruUrl = `${sruBaseUrl}?${sruParams.toString()}`;
 
@@ -47,9 +89,8 @@ exports.handler = async (event) => {
         const facetsData = searchResponse['sru:extraResponseData']?.['sru:facetedResults']?.['facet:facet'];
         const facets = Array.isArray(facetsData) ? facetsData : (facetsData ? [facetsData] : []);
 
-        // GEFIXT - juiste data extractie
+        // Enhanced data extraction
         const simplifiedRecords = records.map(record => {
-            // FIX: gzd:gzd in plaats van gzd:gad
             const originalData = record['sru:recordData']?.['gzd:gzd']?.['gzd:originalData'];
             const enrichedData = record['sru:recordData']?.['gzd:gzd']?.['gzd:enrichedData'];
 
@@ -58,7 +99,6 @@ exports.handler = async (event) => {
             const mantel = metadata['overheidwetgeving:owmsmantel'] || {};
             const tpmeta = metadata['overheidwetgeving:tpmeta'] || {};
 
-            // FIX: Betere data extractie - soms string, soms object met #text
             const getTextValue = (field) => {
                 if (!field) return null;
                 return typeof field === 'string' ? field : field['#text'] || field;
@@ -82,6 +122,8 @@ exports.handler = async (event) => {
             const organisationType = getTextValue(tpmeta['overheidwetgeving:organisatietype']);
             const publicatieNaam = getTextValue(tpmeta['overheidwetgeving:publicatienaam']);
             const publicatieNummer = getTextValue(tpmeta['overheidwetgeving:publicatienummer']);
+            const productArea = getTextValue(tpmeta['c:product-area']);
+            const vergaderJaar = getTextValue(tpmeta['overheidwetgeving:vergaderjaar']);
 
             return {
                 // Basis velden
@@ -102,11 +144,18 @@ exports.handler = async (event) => {
                 // Extra metadata
                 organisationType,
                 publicatieNaam,
-                publicatieNummer
+                publicatieNummer,
+                productArea,
+                vergaderJaar,
+                
+                // Computed fields
+                displayDate: date || issued || available || 'Onbekend',
+                documentIcon: getDocumentIcon(type),
+                collectionName: getCollectionName(productArea)
             };
         });
 
-        // FIX: Betere facets parsing
+        // Enhanced facets parsing
         const simplifiedFacets = facets.map(facet => {
             const index = facet['facet:index']?.['#text'];
             const termsData = facet['facet:terms']?.['facet:term'];
@@ -116,17 +165,24 @@ exports.handler = async (event) => {
                 actualTerm: term['facet:actualTerm']?.['#text'],
                 query: term['facet:query']?.['#text'],
                 count: parseInt(term['facet:count']?.['#text'], 10)
-            }));
+            })).filter(term => term.actualTerm && term.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 20); // Top 20 per facet
 
-            return { index, terms: simplifiedTerms };
-        });
+            return { 
+                index, 
+                terms: simplifiedTerms,
+                displayName: getFacetDisplayName(index)
+            };
+        }).filter(facet => facet.terms.length > 0);
 
         return {
             statusCode: 200,
             body: JSON.stringify({
                 records: simplifiedRecords,
                 totalRecords: totalRecords,
-                facets: simplifiedFacets
+                facets: simplifiedFacets,
+                query: advancedQuery
             }),
         };
 
@@ -138,3 +194,49 @@ exports.handler = async (event) => {
         };
     }
 };
+
+// Helper functions
+function getSortKey(sortBy) {
+    switch(sortBy) {
+        case 'date': return 'dt.date/sort.descending';
+        case 'title': return 'dt.title/sort.ascending';
+        case 'modified': return 'dt.modified/sort.descending';
+        default: return 'score/sort.descending';
+    }
+}
+
+function getDocumentIcon(type) {
+    if (!type) return '📄';
+    const lowerType = type.toLowerCase();
+    
+    if (lowerType.includes('wet') || lowerType.includes('regeling')) return '⚖️';
+    if (lowerType.includes('besluit') || lowerType.includes('verordening')) return '📋';
+    if (lowerType.includes('kamerstuk') || lowerType.includes('handelingen')) return '🏛️';
+    if (lowerType.includes('bijlage')) return '📎';
+    if (lowerType.includes('brief') || lowerType.includes('circulaire')) return '✉️';
+    if (lowerType.includes('bekendmaking') || lowerType.includes('kennisgeving')) return '📢';
+    if (lowerType.includes('verdrag') || lowerType.includes('tractaat')) return '🤝';
+    
+    return '📄';
+}
+
+function getCollectionName(productArea) {
+    const collections = {
+        'officielepublicaties': 'Officiële Publicaties',
+        'sgd': 'Staten-Generaal Digitaal',
+        'tuchtrecht': 'Tuchtrecht',
+        'samenwerkendecatalogi': 'Samenwerkende Catalogi',
+        'verdragenbank': 'Verdragenbank',
+        'plooi': 'PLOOI'
+    };
+    return collections[productArea] || productArea || 'Onbekend';
+}
+
+function getFacetDisplayName(index) {
+    const names = {
+        'dt.type': 'Document Type',
+        'w.organisatietype': 'Organisatie Type',
+        'c.product-area': 'Collectie'
+    };
+    return names[index] || index;
+}
