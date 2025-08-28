@@ -206,17 +206,16 @@ function getSortKey(sortBy) {
 }
 
 function getDocumentIcon(type) {
-    if (!type) return '📄';
-    const lowerType = type.toLowerCase();
+    if (typeof type !== 'string') return '📄'; // fallback icon
     
-    if (lowerType.includes('wet') || lowerType.includes('regeling')) return '⚖️';
-    if (lowerType.includes('besluit') || lowerType.includes('verordening')) return '📋';
-    if (lowerType.includes('kamerstuk') || lowerType.includes('handelingen')) return '🏛️';
-    if (lowerType.includes('bijlage')) return '📎';
-    if (lowerType.includes('brief') || lowerType.includes('circulaire')) return '✉️';
-    if (lowerType.includes('bekendmaking') || lowerType.includes('kennisgeving')) return '📢';
-    if (lowerType.includes('verdrag') || lowerType.includes('tractaat')) return '🤝';
-    
+    const low = type.toLowerCase();
+    if (low.includes('wet') || low.includes('regeling')) return '⚖️';
+    if (low.includes('besluit') || low.includes('verordening')) return '📋';
+    if (low.includes('kamerstuk') || low.includes('handelingen')) return '🏛️';
+    if (low.includes('bijlage')) return '📎';
+    if (low.includes('brief') || low.includes('circulaire')) return '✉️';
+    if (low.includes('bekendmaking') || low.includes('kennisgeving')) return '📢';
+    if (low.includes('verdrag') || low.includes('tractaat')) return '🤝';
     return '📄';
 }
 
