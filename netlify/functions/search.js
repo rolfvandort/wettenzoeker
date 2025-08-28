@@ -32,7 +32,7 @@ exports.handler = async (event) => {
             facetFilters,
             searchMode
         } = event.queryStringParameters || {};
-
+    }
         // Enhanced validation - allow search without query if filters are present
         const hasFilters = !!(collection || documentType || organization || startDate || endDate || location || facetFilters);
         
