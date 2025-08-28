@@ -23,7 +23,17 @@
         <aside class="sidebar" id="filter-sidebar">
             <h2>Filters</h2>
             <div id="filter-container">
+                <div class="filter-section">
+                    <h3 class="collapsible-header">Datum</h3>
+                    <div class="date-filter filter-options expanded">
+                        <label for="start-date">Van:</label>
+                        <input type="date" id="start-date">
+                        <label for="end-date">Tot:</label>
+                        <input type="date" id="end-date">
+                        <button id="apply-date-filter">Toepassen</button>
+                    </div>
                 </div>
+            </div>
             <p id="no-filters" class="hidden">Geen filters beschikbaar voor deze zoekopdracht.</p>
         </aside>
 
@@ -42,4 +52,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
