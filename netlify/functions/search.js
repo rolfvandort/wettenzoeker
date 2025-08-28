@@ -28,13 +28,6 @@ exports.handler = async (event) => {
         const sruResponse = await fetch(sruUrl);
         const xmlText = await sruResponse.text();
 
-        // DEBUG: Log de ruwe XML response
-        console.log('=== RUWE XML RESPONSE ===');
-        console.log('URL:', sruUrl);
-        console.log('XML Length:', xmlText.length);
-        console.log('First 2000 chars:', xmlText.substring(0, 2000));
-        console.log('========================');
-
         const parser = new XMLParser({
             ignoreAttributes: false,
             attributeNamePrefix: "@_",
@@ -45,12 +38,6 @@ exports.handler = async (event) => {
         });
 
         const jsonObj = parser.parse(xmlText);
-
-        // DEBUG: Log de geparsede JSON structuur
-        console.log('=== GEPARSEDE JSON ===');
-        console.log('JSON Structure:', JSON.stringify(jsonObj, null, 2).substring(0, 3000));
-        console.log('====================');
-
         const searchResponse = jsonObj['sru:searchRetrieveResponse'] || {};
         const totalRecords = parseInt(searchResponse['sru:numberOfRecords'], 10) || 0;
 
@@ -60,71 +47,66 @@ exports.handler = async (event) => {
         const facetsData = searchResponse['sru:extraResponseData']?.['sru:facetedResults']?.['facet:facet'];
         const facets = Array.isArray(facetsData) ? facetsData : (facetsData ? [facetsData] : []);
 
-        // DEBUG: Log eerste record in detail
-        if (records.length > 0) {
-            console.log('=== EERSTE RECORD DETAIL ===');
-            console.log(JSON.stringify(records[0], null, 2));
-            console.log('===========================');
-        }
-
-        // DEBUG: Log facets
-        console.log('=== FACETS ===');
-        console.log('Facets found:', facets.length);
-        console.log('Facets structure:', JSON.stringify(facets, null, 2));
-        console.log('==============');
-
+        // GEFIXT - juiste data extractie
         const simplifiedRecords = records.map(record => {
-            const originalData = record['sru:recordData']?.['gzd:gad']?.['gzd:originalData'];
-            const enrichedData = record['sru:recordData']?.['gzd:gad']?.['gzd:enrichedData'];
+            // FIX: gzd:gzd in plaats van gzd:gad
+            const originalData = record['sru:recordData']?.['gzd:gzd']?.['gzd:originalData'];
+            const enrichedData = record['sru:recordData']?.['gzd:gzd']?.['gzd:enrichedData'];
 
             const metadata = originalData?.['overheidwetgeving:meta'] || {};
             const core = metadata['overheidwetgeving:owmskern'] || {};
             const mantel = metadata['overheidwetgeving:owmsmantel'] || {};
-            const enriched = enrichedData || {};
+            const tpmeta = metadata['overheidwetgeving:tpmeta'] || {};
 
-            const getNestedValue = (obj, path) => {
-                const parts = path.split('.');
-                let current = obj;
-                for (let part of parts) {
-                    current = current?.[part];
-                }
-                return current;
+            // FIX: Betere data extractie - soms string, soms object met #text
+            const getTextValue = (field) => {
+                if (!field) return null;
+                return typeof field === 'string' ? field : field['#text'] || field;
             };
 
-            const preferredUrl = getNestedValue(enriched, 'gzd:preferredUrl.#text');
-            const title = getNestedValue(core, 'dcterms:title.#text');
-            const date = getNestedValue(mantel, 'dcterms:date.#text');
-            const issued = getNestedValue(mantel, 'dcterms:issued.#text');
-            const creator = getNestedValue(core, 'dcterms:creator.#text');
-            const type = getNestedValue(core, 'dcterms:type.#text');
+            const title = getTextValue(core['dcterms:title']);
+            const creator = getTextValue(core['dcterms:creator']); 
+            const type = getTextValue(core['dcterms:type']);
+            const date = getTextValue(mantel['dcterms:date']);
+            const issued = getTextValue(mantel['dcterms:issued']);
+            const modified = getTextValue(core['dcterms:modified']);
+            const available = getTextValue(mantel['dcterms:available']);
+            const identifier = getTextValue(core['dcterms:identifier']);
+            const language = getTextValue(core['dcterms:language']);
+            
+            // URLs uit enrichedData
+            const preferredUrl = enrichedData?.['gzd:preferredUrl'];
+            const pdfUrl = enrichedData?.['gzd:url'];
 
-            // DEBUG: Log data extractie voor eerste record
-            if (records.indexOf(record) === 0) {
-                console.log('=== DATA EXTRACTIE EERSTE RECORD ===');
-                console.log('originalData exists:', !!originalData);
-                console.log('enrichedData exists:', !!enrichedData);
-                console.log('metadata exists:', !!metadata);
-                console.log('core exists:', !!core);
-                console.log('mantel exists:', !!mantel);
-                console.log('extracted title:', title);
-                console.log('extracted date:', date);
-                console.log('extracted issued:', issued);
-                console.log('extracted creator:', creator);
-                console.log('extracted type:', type);
-                console.log('extracted preferredUrl:', preferredUrl);
-                console.log('====================================');
-            }
+            // Extra metadata uit tpmeta
+            const organisationType = getTextValue(tpmeta['overheidwetgeving:organisatietype']);
+            const publicatieNaam = getTextValue(tpmeta['overheidwetgeving:publicatienaam']);
+            const publicatieNummer = getTextValue(tpmeta['overheidwetgeving:publicatienummer']);
 
             return {
+                // Basis velden
                 title,
-                date,
-                issued,
                 creator,
                 type,
-                preferredUrl
+                date,
+                issued,
+                modified,
+                available,
+                identifier,
+                language,
+                
+                // URLs
+                preferredUrl,
+                pdfUrl,
+                
+                // Extra metadata
+                organisationType,
+                publicatieNaam,
+                publicatieNummer
             };
         });
 
+        // FIX: Betere facets parsing
         const simplifiedFacets = facets.map(facet => {
             const index = facet['facet:index']?.['#text'];
             const termsData = facet['facet:terms']?.['facet:term'];
