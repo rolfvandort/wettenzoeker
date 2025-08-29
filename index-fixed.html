@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roelies MEGA-Zoeker - Doorzoek Nederlandse Overheidsinformatie</title>
+    <meta name="description" content="Doorzoek eenvoudig alle Nederlandse overheidspublicaties, wetten, besluiten en officiële documenten. Gratis toegang tot Staatsblad, Staatscourant, Kamerstukken en meer.">
+    <meta name="keywords" content="overheid, wetten, besluiten, staatsblad, staatscourant, kamerstukken, zoeken, nederland">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <div>
+                <h1>Roelies MEGA-Zoeker</h1>
+                <p>Doorzoek Nederlandse overheidsinformatie</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-documents">12M+</span>
+                    <span class="stat-label">Documenten</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">6</span>
+                    <span class="stat-label">Collecties</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Beschikbaar</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-container">
+            <form id="search-form" class="search-form">
+                <div class="search-input-wrapper">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Zoek in wetten, besluiten, kamerstukken en meer..." 
+                        maxlength="300"
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                    <div id="input-counter" class="input-counter" style="display: none;">
+                        <span id="char-count">0</span> tekens resterend
+                    </div>
+                    <div id="results-preview" class="results-preview" style="display: none;">
+                        ~<span id="preview-count">0</span> resultaten
+                    </div>
+                    <div id="suggestions-container" class="suggestions-container">
+                        <ul id="suggestions-list" class="suggestions-list"></ul>
+                    </div>
+                </div>
+                <button type="submit" id="search-button" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="21 21l-4.35-4.35"></path>
+                    </svg>
+                    Zoeken
+                </button>
+            </form>
+
+            <!-- Progressive Filter Tabs -->
+            <div class="filter-tabs">
+                <!-- Collection Tab -->
+                <div id="collection-tab" class="filter-tab" style="display: none;">
+                    <div class="tab-header">
+                        <div class="tab-title">
+                            <span class="tab-icon">📚</span>
+                            <span>Collectie</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <span class="tooltip-trigger">?</span>
+                            <div class="tooltip-content">
+                                <strong>Kies een specifieke collectie</strong><br>
+                                Beperk uw zoekopdracht tot een specifieke bron zoals het Staatsblad, Kamerstukken of andere overheidscollecties.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="collection-select">Selecteer collectie:</label>
+                            <select id="collection-select" class="form-control">
+                                <option value="">Alle collecties</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Type Tab -->
+                <div id="documenttype-tab" class="filter-tab" style="display: none;">
+                    <div class="tab-header">
+                        <div class="tab-title">
+                            <span class="tab-icon">📋</span>
+                            <span>Documenttype</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <span class="tooltip-trigger">?</span>
+                            <div class="tooltip-content">
+                                <strong>Verfijn op documenttype</strong><br>
+                                Filter op specifieke types zoals wetten, besluiten, kamerstukken of bekendmakingen binnen de gekozen collectie.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="document-type-select">Selecteer documenttype:</label>
+                            <select id="document-type-select" class="form-control">
+                                <option value="">Selecteer documenttype...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Tab -->
+                <div id="organization-tab" class="filter-tab" style="display: none;">
+                    <div class="tab-header">
+                        <div class="tab-title">
+                            <span class="tab-icon">🏢</span>
+                            <span>Organisatie</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <span class="tooltip-trigger">?</span>
+                            <div class="tooltip-content">
+                                <strong>Filter op organisatie</strong><br>
+                                Zoek documenten van een specifieke overheidsorganisatie of ministerie binnen het gekozen documenttype.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="organization-select">Selecteer organisatie:</label>
+                            <select id="organization-select" class="form-control">
+                                <option value="">Selecteer organisatie...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters Tab -->
+                <div id="advanced-tab" class="filter-tab" style="display: none;">
+                    <div class="tab-header">
+                        <div class="tab-title">
+                            <span class="tab-icon">⚙️</span>
+                            <span>Geavanceerd</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <span class="tooltip-trigger">?</span>
+                            <div class="tooltip-content">
+                                <strong>Geavanceerde zoekopties</strong><br>
+                                Gebruik datum-, locatie- en sorteerfilters voor nog preciezere zoekresultaten.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="advanced-grid">
+                            <div class="form-group">
+                                <label for="sort-select">Sorteren op:</label>
+                                <select id="sort-select" class="form-control">
+                                    <option value="relevance">Relevantie</option>
+                                    <option value="date">Datum (nieuwste eerst)</option>
+                                    <option value="title">Titel (A-Z)</option>
+                                    <option value="modified">Laatst gewijzigd</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date-type-select">Datumtype:</label>
+                                <select id="date-type-select" class="form-control">
+                                    <option value="any">Alle datums</option>
+                                    <option value="issued">Uitgiftedatum</option>
+                                    <option value="available">Publicatiedatum</option>
+                                    <option value="modified">Wijzigingsdatum</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Datumbereik:</label>
+                            <div class="date-range">
+                                <input type="date" id="start-date" class="form-control" placeholder="Van datum">
+                                <input type="date" id="end-date" class="form-control" placeholder="Tot datum">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location-filter">Locatie/Postcode:</label>
+                            <input 
+                                type="text" 
+                                id="location-filter" 
+                                class="form-control" 
+                                placeholder="bijv. Amsterdam of 1234AB"
+                            />
+                        </div>
+                        
+                        <button type="button" id="clear-filters" class="btn btn-outline">
+                            🗑️ Alle filters wissen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Results Section -->
+        <section class="results-section" id="results-section">
+            <!-- Loading Indicator -->
+            <div id="loader" class="loader" style="display: none;">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Search Summary -->
+            <div id="search-summary" class="search-summary" style="display: none;">
+                <h2>Zoekresultaten</h2>
+                <p>Resultaten worden geladen...</p>
+            </div>
+
+            <!-- Active Filter Chips -->
+            <div id="filter-chips-container" class="filter-chips-container" style="display: none;">
+                <div class="filter-chips-label">Actieve filters:</div>
+                <div id="filter-chips-list" class="filter-chips-list"></div>
+            </div>
+
+            <!-- Results Info -->
+            <div id="results-info" class="results-info" style="display: none;">
+                <div>
+                    <span class="results-count">0 resultaten</span>
+                    <span class="results-range"></span>
+                </div>
+                <div class="results-controls">
+                    <div class="results-per-page">
+                        <label for="records-per-page">Per pagina:</label>
+                        <select id="records-per-page">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <button id="export-btn" class="btn btn-sm" style="display: none;">
+                        📊 Exporteren
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Results List -->
+            <div id="results-list" class="results-list"></div>
+
+            <!-- No Results -->
+            <div id="no-results" class="card" style="display: none;">
+                <div class="card__body">
+                    <h3>Geen resultaten gevonden</h3>
+                    <p>Probeer een andere zoekterm of pas uw filters aan.</p>
+                    
+                    <div id="smart-suggestions" class="smart-suggestions">
+                        <h4>💡 Suggesties:</h4>
+                        <div id="suggestions-list">
+                            <!-- Dynamic suggestions will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="smart-suggestions">
+                        <h4>Tips voor betere zoekresultaten:</h4>
+                        <ul>
+                            <li>Controleer of er geen typfouten in uw zoekopdracht staan</li>
+                            <li>Probeer minder specifieke zoektermen</li>
+                            <li>Gebruik synoniemen of gerelateerde termen</li>
+                            <li>Verwijder enkele filters om meer resultaten te krijgen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination-container" class="pagination-container" style="display: none;">
+                <button id="prev-page" class="pagination-btn" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                    Vorige
+                </button>
+                
+                <div class="pagination-info">
+                    <span id="current-page-info">Pagina 1 van 1</span>
+                </div>
+                
+                <button id="next-page" class="pagination-btn" disabled>
+                    Volgende
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9,18 15,12 9,6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Sidebar with Facets -->
+        <aside id="filter-sidebar" class="filter-sidebar">
+            <div class="card">
+                <div class="card__header">
+                    <h3>Filter resultaten</h3>
+                </div>
+                <div class="card__body">
+                    <div id="facets-container">
+                        <!-- Dynamic facets will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search History -->
+            <div class="card" style="margin-top: var(--space-16);">
+                <div class="card__header">
+                    <h3>Recente zoekopdrachten</h3>
+                </div>
+                <div class="card__body">
+                    <div id="search-history">
+                        <p class="text-sm text-secondary">Uw zoekopdrachten verschijnen hier</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: var(--color-surface); padding: var(--space-32) 0; margin-top: var(--space-32); border-top: 1px solid var(--color-border);">
+        <div class="container">
+            <div style="text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+                <p>© 2024 Roelies MEGA-Zoeker | Data van <a href="https://overheid.nl" target="_blank" rel="noopener">Overheid.nl</a></p>
+                <p>Gratis toegang tot Nederlandse overheidsinformatie</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
