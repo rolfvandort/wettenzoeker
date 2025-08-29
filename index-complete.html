@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roelies MEGA-Zoeker - Doorzoek Nederlandse Overheidsinformatie</title>
+    <meta name="description" content="Doorzoek eenvoudig alle Nederlandse overheidspublicaties, wetten, besluiten en officiële documenten. Gratis toegang tot Staatsblad, Staatscourant, Kamerstukken en meer.">
+    <meta name="keywords" content="overheid, wetten, besluiten, staatsblad, staatscourant, kamerstukken, zoeken, nederland">
+    <meta name="author" content="Roelies MEGA-Zoeker">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Roelies MEGA-Zoeker - Nederlandse Overheidsinformatie">
+    <meta property="og:description" content="Doorzoek alle Nederlandse overheidspublicaties, wetten en besluiten in één krachtige zoekmachine.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://roelies-mega-zoeker.netlify.app">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="canonical" href="https://roelies-mega-zoeker.netlify.app">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-branding">
+                <h1>
+                    <span class="logo-icon">🏛️</span>
+                    Roelies MEGA-Zoeker
+                </h1>
+                <p class="header-subtitle">Doorzoek Nederlandse overheidsinformatie</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-documents">12M+</span>
+                    <span class="stat-label">Documenten</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">6</span>
+                    <span class="stat-label">Collecties</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Beschikbaar</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-container">
+            <form id="search-form" class="search-form" role="search">
+                <div class="search-input-wrapper">
+                    <label for="search-input" class="sr-only">Zoek in overheidsdocumenten</label>
+                    <input 
+                        type="search" 
+                        id="search-input" 
+                        name="q"
+                        placeholder="Zoek in wetten, besluiten, kamerstukken en meer..." 
+                        maxlength="300"
+                        autocomplete="off"
+                        spellcheck="false"
+                        aria-describedby="search-help"
+                    />
+                    
+                    <div id="input-counter" class="input-counter" style="display: none;" aria-live="polite">
+                        <span id="char-count">0</span> tekens resterend
+                    </div>
+                    
+                    <div id="results-preview" class="results-preview" style="display: none;" aria-live="polite">
+                        ~<span id="preview-count">0</span> resultaten
+                    </div>
+                    
+                    <div id="suggestions-container" class="suggestions-container" role="listbox" aria-label="Zoeksuggesties">
+                        <ul id="suggestions-list" class="suggestions-list" role="listbox"></ul>
+                    </div>
+                </div>
+                
+                <button type="submit" id="search-button" class="btn btn-primary" aria-describedby="search-help">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="21 21l-4.35-4.35"></path>
+                    </svg>
+                    <span>Zoeken</span>
+                </button>
+            </form>
+
+            <div id="search-help" class="search-help">
+                <p><strong>Zoektips:</strong> Gebruik aanhalingstekens voor exacte zinnen, AND/OR voor gecombineerde zoektermen. <kbd>Ctrl+K</kbd> om snel te zoeken.</p>
+            </div>
+
+            <!-- Progressive Filter Tabs -->
+            <div class="filter-tabs" role="tablist" aria-label="Zoekfilters">
+                <!-- Collection Tab -->
+                <div id="collection-tab" class="filter-tab" role="tabpanel" style="display: none;">
+                    <div class="tab-header" role="tab" aria-expanded="true">
+                        <div class="tab-title">
+                            <span class="tab-icon" aria-hidden="true">📚</span>
+                            <span>Collectie</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <button class="tooltip-trigger" aria-label="Uitleg over collectiefilter" type="button">?</button>
+                            <div class="tooltip-content" role="tooltip">
+                                <strong>Kies een specifieke collectie</strong><br>
+                                Beperk uw zoekopdracht tot een specifieke bron zoals het Staatsblad, Kamerstukken of andere overheidscollecties.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="collection-select" class="form-label">Selecteer collectie:</label>
+                            <select id="collection-select" class="form-control" aria-describedby="collection-help">
+                                <option value="">Alle collecties</option>
+                            </select>
+                            <div id="collection-help" class="form-help">Kies een specifieke overheidscollectie om uw zoekresultaten te verfijnen.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Type Tab -->
+                <div id="documenttype-tab" class="filter-tab" role="tabpanel" style="display: none;">
+                    <div class="tab-header" role="tab" aria-expanded="true">
+                        <div class="tab-title">
+                            <span class="tab-icon" aria-hidden="true">📋</span>
+                            <span>Documenttype</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <button class="tooltip-trigger" aria-label="Uitleg over documenttype filter" type="button">?</button>
+                            <div class="tooltip-content" role="tooltip">
+                                <strong>Verfijn op documenttype</strong><br>
+                                Filter op specifieke types zoals wetten, besluiten, kamerstukken of bekendmakingen binnen de gekozen collectie.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="document-type-select" class="form-label">Selecteer documenttype:</label>
+                            <select id="document-type-select" class="form-control" aria-describedby="doctype-help">
+                                <option value="">Alle documenttypen</option>
+                            </select>
+                            <div id="doctype-help" class="form-help">Kies het type document dat u zoekt (beschikbare types hangen af van de gekozen collectie).</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Tab -->
+                <div id="organization-tab" class="filter-tab" role="tabpanel" style="display: none;">
+                    <div class="tab-header" role="tab" aria-expanded="true">
+                        <div class="tab-title">
+                            <span class="tab-icon" aria-hidden="true">🏢</span>
+                            <span>Organisatie</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <button class="tooltip-trigger" aria-label="Uitleg over organisatiefilter" type="button">?</button>
+                            <div class="tooltip-content" role="tooltip">
+                                <strong>Filter op organisatie</strong><br>
+                                Zoek documenten van een specifieke overheidsorganisatie of ministerie binnen het gekozen documenttype.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="form-group">
+                            <label for="organization-select" class="form-label">Selecteer organisatie:</label>
+                            <select id="organization-select" class="form-control" aria-describedby="org-help">
+                                <option value="">Alle organisaties</option>
+                            </select>
+                            <div id="org-help" class="form-help">Kies de overheidsorganisatie die verantwoordelijk is voor het document.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters Tab -->
+                <div id="advanced-tab" class="filter-tab" role="tabpanel" style="display: none;">
+                    <div class="tab-header" role="tab" aria-expanded="true">
+                        <div class="tab-title">
+                            <span class="tab-icon" aria-hidden="true">⚙️</span>
+                            <span>Geavanceerd</span>
+                        </div>
+                        <div class="tab-tooltip">
+                            <button class="tooltip-trigger" aria-label="Uitleg over geavanceerde filters" type="button">?</button>
+                            <div class="tooltip-content" role="tooltip">
+                                <strong>Geavanceerde zoekopties</strong><br>
+                                Gebruik datum-, locatie- en sorteerfilters voor nog preciezere zoekresultaten.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div class="advanced-grid">
+                            <div class="form-group">
+                                <label for="sort-select" class="form-label">Sorteren op:</label>
+                                <select id="sort-select" class="form-control">
+                                    <option value="relevance">Relevantie</option>
+                                    <option value="date">Datum (nieuwste eerst)</option>
+                                    <option value="title">Titel (A-Z)</option>
+                                    <option value="modified">Laatst gewijzigd</option>
+                                    <option value="issued">Uitgiftedatum</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date-type-select" class="form-label">Datumtype:</label>
+                                <select id="date-type-select" class="form-control">
+                                    <option value="any">Alle datums</option>
+                                    <option value="issued">Uitgiftedatum</option>
+                                    <option value="available">Publicatiedatum</option>
+                                    <option value="modified">Wijzigingsdatum</option>
+                                    <option value="created">Aanmaakdatum</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Datumbereik:</label>
+                            <div class="date-range">
+                                <input type="date" id="start-date" class="form-control" aria-label="Van datum">
+                                <span class="date-separator">tot</span>
+                                <input type="date" id="end-date" class="form-control" aria-label="Tot datum">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location-filter" class="form-label">Locatie/Postcode:</label>
+                            <input 
+                                type="text" 
+                                id="location-filter" 
+                                class="form-control" 
+                                placeholder="bijv. Amsterdam of 1234AB"
+                                aria-describedby="location-help"
+                            />
+                            <div id="location-help" class="form-help">Zoek op plaatsnaam of Nederlandse postcode (1234AB formaat).</div>
+                        </div>
+                        
+                        <button type="button" id="clear-filters" class="btn btn-outline btn-full-width">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 1 2 2 2 2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                            <span>Alle filters wissen</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Results Section -->
+        <section class="results-section" id="results-section" role="main">
+            <!-- Loading Indicator -->
+            <div id="loader" class="loader" style="display: none;" aria-live="polite" aria-label="Zoeken...">
+                <div class="spinner" aria-hidden="true"></div>
+                <span class="loader-text">Zoeken in overheidsdocumenten...</span>
+            </div>
+
+            <!-- Search Summary -->
+            <div id="search-summary" class="search-summary" style="display: none;" role="status" aria-live="polite">
+                <h2>Zoekresultaten</h2>
+                <p>Resultaten worden geladen...</p>
+            </div>
+
+            <!-- Active Filter Chips -->
+            <div id="filter-chips-container" class="filter-chips-container" style="display: none;" role="region" aria-label="Actieve filters">
+                <div class="filter-chips-label">Actieve filters:</div>
+                <div id="filter-chips-list" class="filter-chips-list"></div>
+            </div>
+
+            <!-- Results Info and Controls -->
+            <div id="results-info" class="results-info" style="display: none;" role="status" aria-live="polite">
+                <div class="results-summary">
+                    <span class="results-count">0 resultaten</span>
+                    <span class="results-range"></span>
+                </div>
+                <div class="results-controls">
+                    <div class="results-per-page">
+                        <label for="records-per-page" class="form-label">Per pagina:</label>
+                        <select id="records-per-page" class="form-control">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <button id="export-btn" class="btn btn-secondary" style="display: none;" aria-describedby="export-help">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Exporteren</span>
+                    </button>
+                    <div id="export-help" class="sr-only">Exporteer zoekresultaten naar verschillende formaten</div>
+                </div>
+            </div>
+
+            <!-- Search Results List -->
+            <div id="results-list" class="results-list" role="region" aria-label="Zoekresultaten"></div>
+
+            <!-- No Results -->
+            <div id="no-results" class="no-results-container" style="display: none;" role="status">
+                <div class="card">
+                    <div class="card__body">
+                        <div class="no-results-icon" aria-hidden="true">🔍</div>
+                        <h3>Geen resultaten gevonden</h3>
+                        <p>Er zijn geen documenten gevonden die voldoen aan uw zoekcriteria.</p>
+                        
+                        <div id="smart-suggestions" class="smart-suggestions" style="display: none;">
+                            <h4>💡 Probeer dit:</h4>
+                            <div id="suggestions-list"></div>
+                        </div>
+                        
+                        <div class="search-tips">
+                            <h4>Tips voor betere zoekresultaten:</h4>
+                            <ul>
+                                <li>Controleer op typfouten in uw zoekopdracht</li>
+                                <li>Probeer minder specifieke zoektermen</li>
+                                <li>Gebruik synoniemen of gerelateerde termen</li>
+                                <li>Verwijder enkele filters om meer resultaten te krijgen</li>
+                                <li>Gebruik <code>"exacte zinnen"</code> tussen aanhalingstekens</li>
+                                <li>Combineer termen met <code>AND</code> of <code>OR</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <nav id="pagination-container" class="pagination-container" style="display: none;" aria-label="Paginanavigatie">
+                <button id="prev-page" class="pagination-btn" disabled aria-label="Vorige pagina">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                    <span>Vorige</span>
+                </button>
+                
+                <div class="pagination-info">
+                    <span id="current-page-info" aria-live="polite">Pagina 1 van 1</span>
+                </div>
+                
+                <button id="next-page" class="pagination-btn" disabled aria-label="Volgende pagina">
+                    <span>Volgende</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="9,18 15,12 9,6"></polyline>
+                    </svg>
+                </button>
+            </nav>
+        </section>
+
+        <!-- Sidebar with Facets -->
+        <aside id="filter-sidebar" class="filter-sidebar" role="complementary" aria-label="Zoekfilters en opties">
+            <div class="card">
+                <div class="card__header">
+                    <h3>Filter resultaten</h3>
+                </div>
+                <div class="card__body">
+                    <div id="facets-container" role="region" aria-label="Beschikbare filters"></div>
+                </div>
+            </div>
+
+            <!-- Search History -->
+            <div class="card" style="margin-top: var(--space-16);">
+                <div class="card__header">
+                    <h3>Recente zoekopdrachten</h3>
+                </div>
+                <div class="card__body">
+                    <div id="search-history" role="region" aria-label="Zoekgeschiedenis">
+                        <p class="text-sm text-secondary">Uw zoekopdrachten verschijnen hier</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help and Information -->
+            <div class="card" style="margin-top: var(--space-16);">
+                <div class="card__header">
+                    <h3>Hulp bij zoeken</h3>
+                </div>
+                <div class="card__body">
+                    <div class="help-content">
+                        <dl class="help-list">
+                            <dt><strong>Exacte zin:</strong></dt>
+                            <dd>Gebruik <code>"..."</code> voor exacte zinnen</dd>
+                            
+                            <dt><strong>Combineren:</strong></dt>
+                            <dd>Gebruik <code>AND</code>, <code>OR</code>, <code>NOT</code></dd>
+                            
+                            <dt><strong>Wildcards:</strong></dt>
+                            <dd>Gebruik <code>*</code> voor meerdere karakters</dd>
+                            
+                            <dt><strong>Sneltoetsen:</strong></dt>
+                            <dd><kbd>Ctrl+K</kbd> voor zoeken, <kbd>Esc</kbd> voor annuleren</dd>
+                        </dl>
+                        
+                        <div class="help-links">
+                            <a href="https://www.overheid.nl" target="_blank" rel="noopener" class="help-link">
+                                Bezoek Overheid.nl
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                    <polyline points="15,3 21,3 21,9"/>
+                                    <line x1="10" y1="14" x2="21" y2="3"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Accessibility Skip Links -->
+    <div class="skip-links">
+        <a href="#search-input" class="skip-link">Spring naar zoeken</a>
+        <a href="#results-section" class="skip-link">Spring naar resultaten</a>
+        <a href="#filter-sidebar" class="skip-link">Spring naar filters</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <h3>🏛️ Roelies MEGA-Zoeker</h3>
+                    <p>Krachtige zoekmachine voor Nederlandse overheidsinformatie</p>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Over deze service</h4>
+                        <ul>
+                            <li><a href="#" onclick="showAboutModal(); return false;">Over Roelies MEGA-Zoeker</a></li>
+                            <li><a href="https://www.overheid.nl" target="_blank" rel="noopener">Overheid.nl</a></li>
+                            <li><a href="#" onclick="showApiModal(); return false;">API Informatie</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Collecties</h4>
+                        <ul>
+                            <li><a href="#" onclick="setCollection('officielepublicaties')">Officiële Publicaties</a></li>
+                            <li><a href="#" onclick="setCollection('sgd')">Staten-Generaal Digitaal</a></li>
+                            <li><a href="#" onclick="setCollection('tuchtrecht')">Tuchtrecht</a></li>
+                            <li><a href="#" onclick="setCollection('verdragenbank')">Verdragenbank</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Help</h4>
+                        <ul>
+                            <li><a href="#" onclick="showHelpModal(); return false;">Zoektips</a></li>
+                            <li><a href="#" onclick="showKeyboardModal(); return false;">Sneltoetsen</a></li>
+                            <li><a href="#" onclick="showContactModal(); return false;">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-legal">
+                    <p>&copy; 2024 Roelies MEGA-Zoeker | Data van <a href="https://overheid.nl" target="_blank" rel="noopener">Overheid.nl</a></p>
+                    <p>Gratis toegang tot Nederlandse overheidsinformatie volgens de <a href="https://wetten.overheid.nl/BWBR0005252/" target="_blank" rel="noopener">Wet openbaarheid van bestuur</a></p>
+                </div>
+                <div class="footer-meta">
+                    <p>Gebouwd met moderne webtechnologieën | Geoptimaliseerd voor toegankelijkheid</p>
+                    <p>Laatste update: <time datetime="2024-08-29">29 augustus 2024</time></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Wissel tussen licht en donker thema" title="Thema wijzigen (Alt+T)">
+        <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+
+    <!-- Screen Reader Announcements -->
+    <div id="sr-announcements" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+    <!-- JavaScript -->
+    <script src="app-complete.js"></script>
+    
+    <!-- Service Worker for Offline Functionality -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully');
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed');
+                    });
+            });
+        }
+
+        // Global functions for footer links
+        function setCollection(collection) {
+            const select = document.getElementById('collection-select');
+            if (select) {
+                select.value = collection;
+                select.dispatchEvent(new Event('change'));
+                document.getElementById('search-input')?.focus();
+            }
+        }
+
+        function showAboutModal() {
+            alert('Roelies MEGA-Zoeker is een krachtige zoekmachine voor Nederlandse overheidsinformatie. Deze applicatie gebruikt de officiële Overheid.nl SRU 2.0 API om toegang te bieden tot miljoenen overheidsdocumenten.');
+        }
+
+        function showApiModal() {
+            alert('Deze applicatie gebruikt de Overheid.nl SRU 2.0 API. Meer informatie: https://www.overheid.nl/help/zoeken');
+        }
+
+        function showHelpModal() {
+            alert('Zoektips:\n• Gebruik "aanhalingstekens" voor exacte zinnen\n• Combineer met AND, OR, NOT\n• Gebruik * als wildcard\n• Filter op collectie, documenttype en organisatie\n• Zoek op postcode voor lokale informatie');
+        }
+
+        function showKeyboardModal() {
+            alert('Sneltoetsen:\n• Ctrl+K: Zoeken\n• Escape: Annuleren/Sluiten\n• Tab: Navigeren door filters\n• Enter: Bevestigen\n• Pijltjestoetsen: Navigeren door suggesties');
+        }
+
+        function showContactModal() {
+            alert('Voor vragen over deze zoekmachine, neem contact op via GitHub of de officiële Overheid.nl kanalen voor inhoudelijke vragen over documenten.');
+        }
+    </script>
+</body>
+</html>

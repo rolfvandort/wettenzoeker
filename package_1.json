@@ -1,0 +1,56 @@
+{
+  "name": "roelies-mega-zoeker",
+  "version": "1.0.0",
+  "description": "Complete Dutch Government Search Application - Zoek in alle Nederlandse overheidspublicaties via de Overheid.nl SRU 2.0 API",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Build successful - static files ready'",
+    "start": "netlify dev --port 8888",
+    "deploy": "netlify deploy --prod",
+    "test": "echo 'No tests specified yet'"
+  },
+  "keywords": [
+    "overheid",
+    "government",
+    "search",
+    "sru",
+    "netherlands",
+    "dutch",
+    "wetten",
+    "besluiten",
+    "kamerstukken",
+    "staatsblad",
+    "staatscourant"
+  ],
+  "author": "Roelies MEGA Zoeker Team",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "fast-xml-parser": "^4.2.5"
+  },
+  "devDependencies": {
+    "netlify-cli": "^15.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/roelies-team/mega-zoeker.git"
+  },
+  "homepage": "https://roelies-mega-zoeker.netlify.app",
+  "bugs": {
+    "url": "https://github.com/roelies-team/mega-zoeker/issues"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "netlify": {
+    "functions": "netlify/functions",
+    "publish": ".",
+    "command": "echo 'Static site - no build needed'"
+  }
+}

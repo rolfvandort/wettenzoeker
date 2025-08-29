@@ -1,0 +1,82 @@
+[build]
+  publish = "."
+  command = "echo 'Netlify build successful - static files ready'"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Redirects for SPA functionality
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Force HTTPS
+[[redirects]]
+  from = "http://roelies-mega-zoeker.netlify.app/*"
+  to = "https://roelies-mega-zoeker.netlify.app/:splat"
+  status = 301
+  force = true
+
+# SPA fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://repository.overheid.nl; font-src 'self' data:;"
+
+# Cache static assets
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# API endpoint caching
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300, s-maxage=600"
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+
+# Environment variables (example - set these in Netlify dashboard)
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "8"
+
+# Deploy previews
+[context.deploy-preview]
+  command = "echo 'Deploy preview build'"
+
+[context.branch-deploy]
+  command = "echo 'Branch deploy build'"
+
+# Development context
+[context.dev]
+  command = "echo 'Development build'"
+  
+# Forms (if needed for feedback)
+[forms]
+  settings = { spam_protection = "recaptcha" }
